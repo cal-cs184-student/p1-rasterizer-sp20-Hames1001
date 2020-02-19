@@ -3,7 +3,7 @@
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 width="200.0px" height="200.0px" viewBox="0 0 200 200" enable-background="new 0 0 200 200"
 	 xml:space="preserve">
-<texture filename="../../img/parrot.png" texid="map"/>
+<texture filename="../../img/jerry.png" texid="map"/>
 <textri texid="map" uvs="0.166667 0.166667 0.208333 0.166667 0.166667 0.208333" points="66.4134 59.2193 70.6562 58.2488 66.4458 62.8112"/>
 <textri texid="map" uvs="0.208333 0.166667 0.166667 0.208333 0.208333 0.208333" points="70.6562 58.2488 66.4458 62.8112 70.7185 61.8181"/>
 <textri texid="map" uvs="0.166667 0.208333 0.208333 0.208333 0.166667 0.25" points="66.4458 62.8112 70.7185 61.8181 66.4359 66.6115"/>

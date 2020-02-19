@@ -6,16 +6,57 @@
 
 namespace CGL {
 
+Color lerp (float x, Color v0, Color v1) {
+    Color mixed;
+    mixed.r = v0.r + x * (v1.r - v0.r);
+    mixed.g = v0.g + x * (v1.g - v0.g);
+    mixed.b = v0.b + x * (v1.b - v0.b);
+    
+    return mixed;
+}
+
 Color Texture::sample(const SampleParams &sp) {
   // TODO: Task 6: Fill this in.
   // return magenta for invalid level
-
-  return Color(1, 0, 1);
+    Color tex;
+    int level;
+    if (sp.lsm == L_ZERO) {
+        level = 0;
+        if (sp.psm == P_NEAREST) {
+            tex = sample_nearest(sp.p_uv, level);
+        }else {
+            tex = sample_bilinear(sp.p_uv, level);
+        }
+        return tex;
+    } else if (sp.lsm ==L_NEAREST) {
+        level = log2(get_level(sp));
+        if (sp.psm == P_NEAREST) {
+            tex = sample_nearest(sp.p_uv, level);
+        }else {
+            tex = sample_bilinear(sp.p_uv, level);
+        }
+        return tex;
+    }
+    level = log2(get_level(sp));
+    float floorLvl = floor(level);
+    float ceilLvl = ceil(level);
+    if (sp.psm == P_NEAREST) {
+        tex = lerp(level - floorLvl, sample_nearest(sp.p_uv, floorLvl), sample_nearest(sp.p_uv, ceilLvl));
+    }else {
+        tex = lerp(level - floorLvl, sample_bilinear(sp.p_uv, floorLvl), sample_bilinear(sp.p_uv, ceilLvl));
+    }
+    
+    return tex;
 }
 
 float Texture::get_level(const SampleParams &sp) {
   // TODO: Task 6: Fill this in.
-  return 0;
+    double differenceDxInX = (sp.p_dx_uv.x - sp.p_uv.x) * width;
+    double differenceDxInY = (sp.p_dx_uv.y - sp.p_uv.y) * height;
+    double differenceDyInX = (sp.p_dy_uv.x - sp.p_uv.x) * width;
+    double differenceDyInY = (sp.p_dy_uv.y - sp.p_uv.y) * height;
+    
+    return max(sqrt(pow(differenceDxInX, 2) + pow(differenceDxInY, 2)), sqrt(pow(differenceDyInX, 2) + pow(differenceDyInY, 2)));
 }
 
 Color MipLevel::get_texel(int tx, int ty) {
@@ -25,13 +66,57 @@ Color MipLevel::get_texel(int tx, int ty) {
 Color Texture::sample_nearest(Vector2D uv, int level) {
   // TODO: Task 5: Fill this in.
   // return magenta for invalid level
-  return Color(1, 0, 1);
+    if (level < 0 || level > mipmap.size()) {
+        return Color(1, 0, 1);
+    }
+    float x = uv.x * mipmap[level].width;
+    float y = uv.y * mipmap[level].height;
+    
+    int roundedX = round(x);
+    int roundedY = round(y);
+    
+    if (roundedX >= mipmap[level].width - 1|| roundedY >= mipmap[level].height - 1) {
+        return Color(1, 1, 1);
+    }
+    
+    Color c = mipmap[level].get_texel(roundedX, roundedY);
+    
+    return c;
 }
+
 
 Color Texture::sample_bilinear(Vector2D uv, int level) {
   // TODO: Task 5: Fill this in.
   // return magenta for invalid level
-  return Color(1, 0, 1);
+    if (level < 0 || level > mipmap.size()) {
+        return Color(1, 0, 1);
+    }
+    float x = uv.x * mipmap[level].width;
+    float y = uv.y * mipmap[level].height;
+    
+    float ceilX = ceil(x);
+    float ceilY = ceil(y);
+    
+    float floorX = floor(x);
+    float floorY = floor(y);
+    
+    if (ceilX > mipmap[level].width - 1 || ceilY > mipmap[level].height - 1) {
+        return Color(1, 1, 1);
+    }
+    
+    Color u11 = mipmap[level].get_texel(ceilX, ceilY);
+    Color u10 = mipmap[level].get_texel(ceilX, floorY);
+    Color u00 = mipmap[level].get_texel(floorX, floorY);
+    Color u01 = mipmap[level].get_texel(floorX, ceilY);
+    
+    float s = x - floorX;
+    float t = y - floorY;
+    
+    Color u0 = lerp(s, u00, u10);
+    Color u1 = lerp(s, u01, u11);
+    
+    Color fin = lerp(t, u0, u1);
+    return fin;
 }
 
 /****************************************************************************/
